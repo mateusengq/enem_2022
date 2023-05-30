@@ -156,5 +156,56 @@ g1_dep_adm + annotate('text', label = "A maior proporção de alunos são de esc
 
 
 #### raça ####
+df_enem$TP_COR_RACA <- factor(df_enem$TP_COR_RACA, levels = c(0, 1, 2, 3, 4, 5, 6),
+                              labels = c('Não declarado', 'Branca', 'Preta',
+                                         'Parda', 'Amarela', 'Indígena','Não dispões da informação'))
 
 
+table(df_enem$TP_COR_RACA)
+
+g1_raca <- df_enem %>%
+    drop_na(TP_COR_RACA) %>%
+    group_by(TP_COR_RACA) %>%
+    summarise(cont = n()) %>%
+    mutate(prop = ((cont/sum(cont))*100)) %>%
+    ggplot(aes(x = reorder(TP_COR_RACA, desc(prop)), y = prop, fill = TP_COR_RACA), color = 'black') +
+    geom_bar(stat = 'identity', col = 'white') +
+    #coord_flip() +
+    geom_label(aes(label = paste0(round(prop,2),"%")), position = position_dodge(0), vjust = -0.25,
+               size = 6, show.legend = F, color = 'white') +
+    ylim(0, 50) +
+    labs(title = 'Proporção de alunos segundo a variável COR/RAÇA', x = '', y = '',
+         #subtitle = 'Dependência Administrativa Escolar ',
+         caption = 'Fonte: Enem 2022') +
+    scale_fill_manual(values =  c(rep('#a9a9a9', 1), rep('#025930', 1), rep('#a9a9a9', 1), rep('#025930',1), rep('#a9a9a9',10)))+
+    theme_ipsum() +
+    theme(legend.position = 'none',
+          legend.title = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(),
+          axis.title.x = element_text(size = 16),
+          axis.title.y = element_text(size = 16),
+          axis.text.y = element_blank(),
+          axis.text.x = element_text(size = 12),
+          plot.title = element_text(size = 22),
+          plot.title.position = "plot",
+          plot.caption = element_text(size = 14))
+
+g1_raca + annotate('text', label = "Aproximadamente 84% dos alunos\nse declaram Pardos ou Brancos", x = 2.5, y = 40,
+                   col = 'black', size = 6, hjust = 0) +
+    annotate('text', label = 'A proporção de declarantes "Indígenas" é\ninferior ao percentual dos\n"Não declarados"!',
+             x = 3.5, y = 15, col = 'firebrick', size = 6, hjust = 0) 
+
+###### estados #####
+
+
+
+
+
+#### nota ######
+df_enem <- df_enem %>%
+    rowwise() %>%
+    mutate(m = mean(c(NU_NOTA_CN, NU_NOTA_CH, NU_NOTA_LC, NU_NOTA_MT), na.rm = TRUE))
+
+hist(df_enem$m)
