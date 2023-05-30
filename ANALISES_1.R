@@ -8,6 +8,20 @@ library(ggtext)
 
 cores <- c('#1B418C','#025930', '#F2E205', '#F2B705', '#D91E1E', '#CCCCCC')
 
+
+theme_padrao <- theme(legend.position = 'none',
+                          legend.title = element_blank(),
+                          panel.grid.major = element_blank(),
+                          panel.grid.minor = element_blank(),
+                          panel.background = element_blank(),
+                          axis.title.y = element_text(size = 16),
+                          axis.title.x = element_text(size = 16),
+                          axis.text.x = element_blank(),
+                          axis.text.y = element_text(size = 12),
+                          plot.title = element_text(size = 22),
+                          plot.title.position = "plot",
+                          plot.caption = element_text(size = 14))
+
 ## alocação de Memória
 memory.limit(24576)
 
@@ -198,10 +212,49 @@ g1_raca + annotate('text', label = "Aproximadamente 84% dos alunos\nse declaram 
              x = 3.5, y = 15, col = 'firebrick', size = 6, hjust = 0) 
 
 ###### estados #####
+if(!require(geobr)){install.packages('geobr')}
+if(!require(sf)){install.packages('sf')}
+if(!require(tmap)){install.packages('tmap')}
+
+# leitura dos estados
+states <- read_state(
+    year = 2019,
+    showProgress = TRUE
+)
+
+head(states)
+
+alunos_estados <- df_enem |>
+    group_by(SG_UF_PROVA) |>
+    summarise(num_alunos = n()) |>
+    mutate(prop = (num_alunos/sum(num_alunos))*100)
 
 
+df_estados <- merge(x = alunos_estados, y = states, by.x = "SG_UF_PROVA", by.y =  "abbrev_state")
+head(df_estados)
 
+ggplot(df_estados) +
+    geom_sf(data = df_estados, aes(fill = prop, geometry = geom), color = "white", size = .15) +
+    labs(title = 'Proporção de alunos por Estado', x = '', y = '',
+         caption = "Fonte: Enem | 2022") +
+    geom_sf_label(aes(label = paste0(round(prop,2),"%"), geometry = geom), #vjust = 0,
+               size = 4, show.legend = F, color = 'black', position = "jitter", check_overlap = TRUE) +
+    scale_fill_gradient(low = "#CCCCCC", high = "#1b418c") +
+    theme_ipsum() +
+    theme(legend.position = 'none',
+          legend.title = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(),
+          #axis.title.y = element_text(size = 16),
+          #axis.title.x = element_text(size = 16),
+          axis.text.x = element_blank(),
+          #axis.text.y = element_text(size = 12),
+          plot.title = element_text(size = 22),
+          plot.title.position = "plot",
+          plot.caption = element_text(size = 14))
 
+# "#1B418C" "#025930" "#F2E205" "#F2B705" "#D91E1E" "#CCCCCC"
 
 #### nota ######
 df_enem <- df_enem %>%
@@ -209,3 +262,14 @@ df_enem <- df_enem %>%
     mutate(m = mean(c(NU_NOTA_CN, NU_NOTA_CH, NU_NOTA_LC, NU_NOTA_MT), na.rm = TRUE))
 
 hist(df_enem$m)
+
+df_enem |>
+    drop_na(TP_DEPENDENCIA_ADM_ESC,m) |>
+    ggplot(aes(y = m, x = as.factor(TP_DEPENDENCIA_ADM_ESC))) +
+    geom_boxplot()
+
+df_enem |>
+    drop_na(TP_DEPENDENCIA_ADM_ESC,m) |>
+    ggplot(aes(x = m, fill = as.factor(TP_DEPENDENCIA_ADM_ESC))) +
+    geom_histogram(alpha = 0.5) +
+    facet_grid(TP_DEPENDENCIA_ADM_ESC~.)
