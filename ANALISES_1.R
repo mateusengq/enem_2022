@@ -256,7 +256,302 @@ ggplot(df_estados) +
 
 # "#1B418C" "#025930" "#F2E205" "#F2B705" "#D91E1E" "#CCCCCC"
 
+
+######### presença por prova ###########
+df_enem$TP_PRESENCA_CN <- factor(df_enem$TP_PRESENCA_CN, levels = c(0, 1, 2),
+                                 labels = c('Faltou', 'Presente', 'Eliminado'))
+
+table(df_enem$TP_PRESENCA_CN)
+prop.table(table(df_enem$TP_PRESENCA_CN))*100
+
+df_enem$TP_PRESENCA_CH <- factor(df_enem$TP_PRESENCA_CH, levels = c(0, 1, 2),
+                                 labels = c('Faltou', 'Presente', 'Eliminado'))
+
+table(df_enem$TP_PRESENCA_CH)
+prop.table(table(df_enem$TP_PRESENCA_CH))*100
+
+df_enem$TP_PRESENCA_LC <- factor(df_enem$TP_PRESENCA_LC, levels = c(0, 1, 2),
+                                 labels = c('Faltou', 'Presente', 'Eliminado'))
+
+table(df_enem$TP_PRESENCA_LC)
+prop.table(table(df_enem$TP_PRESENCA_LC))*100
+
+df_enem$TP_PRESENCA_MT <- factor(df_enem$TP_PRESENCA_MT, levels = c(0, 1, 2),
+                                 labels = c('Faltou', 'Presente', 'Eliminado'))
+
+table(df_enem$TP_PRESENCA_MT)
+prop.table(table(df_enem$TP_PRESENCA_MT))*100
+
+
+######## idioma #######
+df_enem$TP_LINGUA <- factor(df_enem$TP_LINGUA, levels = c(0, 1),
+                            labels = c('Ingles', 'Espanhol'))
+
+
+g1_idioma <- df_enem %>%
+    drop_na(TP_LINGUA) %>%
+    group_by(TP_LINGUA) %>%
+    summarise(cont = n()) %>%
+    mutate(prop = ((cont/sum(cont))*100)) %>%
+    ggplot(aes(x = TP_LINGUA, y = prop, fill = TP_LINGUA), color = 'black') +
+    geom_bar(stat = 'identity', col = 'white') +
+    #coord_flip() +
+    geom_label(aes(label = paste0(round(prop,2),"%")), position = position_dodge(0), vjust = -0.25,
+               size = 6, show.legend = F, color = 'white') +
+    ylim(0, 60) +
+    labs(title = 'Proporção de alunos segundo o idioma de escolha', x = '', y = '',
+         #subtitle = 'Dependência Administrativa Escolar ',
+         caption = 'Fonte: Enem 2022') +
+    scale_fill_manual(values =  c(rep('#1B418C', 1), rep('#025930', 1), rep('#a9a9a9', 1), rep('#025930',1), rep('#a9a9a9',10)))+
+    theme_ipsum() +
+    theme(legend.position = 'none',
+          legend.title = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(),
+          axis.title.x = element_text(size = 16),
+          axis.title.y = element_text(size = 16),
+          axis.text.y = element_blank(),
+          axis.text.x = element_text(size = 12),
+          plot.title = element_text(size = 22),
+          plot.title.position = "plot",
+          plot.caption = element_text(size = 14))
+
+#"#1B418C" "#025930" "#F2E205" "#F2B705" "#D91E1E" "#CCCCCC"
+
+g1_idioma
+
+###### status redação ######
+# incluir status e uma análise da nota
+
+df_enem$TP_STATUS_REDACAO <- factor(df_enem$TP_STATUS_REDACAO, levels = c(1, 2, 3, 4, 5, 6, 7, 8, 9),
+                                    labels = c("Sem problemas",
+                                               "Anulada",
+                                               "Copia do texto motivador",
+                                               "Em branco",
+                                               "Fere direitos humanos",
+                                               "Fuga ao tema",
+                                               "Nao atendimento ao tipo",
+                                               "Texto insuficiente",
+                                               "Parte desconectada"))
+
+
+g1_status_redacao <- df_enem %>%
+    drop_na(TP_STATUS_REDACAO) %>%
+    group_by(TP_STATUS_REDACAO) %>%
+    summarise(cont = n()) %>%
+    mutate(prop = ((cont/sum(cont))*100)) %>%
+    ggplot(aes(x = reorder(TP_STATUS_REDACAO, prop), y = prop, fill = TP_STATUS_REDACAO), color = 'black') +
+    geom_bar(stat = 'identity', col = 'white') +
+    coord_flip() +
+    geom_label(aes(label = paste0(round(prop,2),"%")), position = position_dodge(0.9), hjust = -.15,
+               size = 6, show.legend = F, color = 'white') +
+    ylim(0, 110) +
+    labs(title = 'Avaliação dos Status da Redação', x = '', y = '',
+         #subtitle = 'Dependência Administrativa Escolar ',
+         caption = 'Fonte: Enem 2022') +
+    scale_fill_manual(values =  c(rep('#1B418C', 1), rep('#a9a9a9', 1), rep('#025930', 3), rep('#a9a9a9', 6), rep('#025930',1), rep('#a9a9a9',10)))+
+    theme_ipsum() +
+    theme(legend.position = 'none',
+          legend.title = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(),
+          axis.title.y = element_text(size = 16),
+          axis.title.x = element_text(size = 16),
+          axis.text.x = element_blank(),
+          axis.text.y = element_text(size = 12),
+          plot.title = element_text(size = 22),
+          plot.title.position = "plot",
+          plot.caption = element_text(size = 14))
+
+g1_status_redacao + annotate('text', label = "Quase 95% dos alunos não tiveram\nproblemas na redação", x = 6.75, y = 40,
+                                      col = '#1B418C', size = 6, hjust = 0) +
+    annotate('text', label = "A soma das categorias em cinza\ntotalizam 0,55%", x = 2.75, y = 20,
+             col = '#a9a9a9', size = 6, hjust = 0)
+
+## notas redação
+
+media_redacao <- mean(df_enem$NU_NOTA_REDACAO, na.rm = TRUE)
+media_redacao
+quart1_redacao <- quantile(df_enem$NU_NOTA_REDACAO, na.rm = TRUE, 0.25)
+quart1_redacao
+quart3_redacao <- quantile(df_enem$NU_NOTA_REDACAO, na.rm = TRUE, 0.75)
+quart3_redacao
+quart2_redacao <- quantile(df_enem$NU_NOTA_REDACAO, na.rm = TRUE, 0.5)
+quart2_redacao
+
+sd(df_enem$NU_NOTA_REDACAO, na.rm = T)
+
+notas_1000 <- length(which(df_enem$NU_NOTA_REDACAO == 1000 & !is.na(df_enem$NU_NOTA_REDACAO)))
+notas_1000
+
+df_enem %>%
+    drop_na(NU_NOTA_REDACAO) %>%
+    filter(NU_NOTA_REDACAO == 1000) %>%
+    group_by(TP_SEXO) %>%
+    summarise(cont = n())
+    
+
+g1_redacao <- ggplot(df_enem, aes(x = NU_NOTA_REDACAO)) +
+    geom_histogram(color = "#a9a9a9", alpha = 0.6) +
+    geom_vline(xintercept = media_redacao, color = '#025930', linetype = 'dashed', size = 1)+
+   # geom_vline(xintercept = quart2_redacao, color = '#1B418C', linetype = 'dashed', size = 1)+
+    geom_vline(xintercept = quart1_redacao, color = '#d91e1e', linetype = 'dashed', size = 1, alpha = 0.5)+
+    geom_vline(xintercept = quart3_redacao, color = '#d91e1e', linetype = 'dashed', size = 1, alpha = 0.5)+
+    labs(title = 'Distribuição das notas da Redação', x = '', y = '',
+         #subtitle = 'Dependência Administrativa Escolar ',
+         caption = 'Fonte: Enem 2022') +
+    theme_ipsum() +
+    theme(legend.position = 'none',
+          legend.title = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(),
+          axis.title.x = element_text(size = 16),
+          axis.title.y = element_text(size = 16),
+          axis.text.y = element_blank(),
+          axis.text.x = element_text(size = 12),
+          plot.title = element_text(size = 22),
+          plot.title.position = "plot",
+          plot.caption = element_text(size = 14))
+
+g1_redacao + annotate('text', label = paste0("Média: ", round(media_redacao,2), '\ne a mediana: ', round(quart2_redacao,2)), y = 410000, x = media_redacao+10,
+                    col = '#025930', size = 6, hjust = 0) +
+    annotate('text', label = paste0("Q1: ", round(quart1_redacao,2)),y = 310000, x = quart1_redacao-60,
+             col = '#d91e1e', size = 6, hjust = 0) +
+    annotate('text', label = paste0("Q3: ", round(quart3_redacao,2)),y = 310000, x = quart3_redacao+10,
+             col = '#d91e1e', size = 6, hjust = 0) 
+
+
+### questões família
+
+df_enem$Q001 <- factor(df_enem$Q001, levels = c("A", "B", "C", "D", "E", "F", "G", "H"),
+                       labels=c('Nunca estudou',
+                                'Nao completou a 4 serie/5 ano do ensino fundamental',
+                                'Completou a 4 serie/5 ano, mas nao completou a 8 serie/9 ano do ensino fundamental',
+                                'Completou a 8 serie/9 ano do ensino fundamental, mas nao completou o Ensino Medio',
+                                'Completou o Ensino Medio, mas nao completou a Faculdade',
+                                'Completou a Faculdade, mas nao completou a Pos-graduacao',
+                                'Completou a Pos-graduacao','Nao sei'))
+
+
+(g1_q001 <- df_enem %>%
+    group_by(Q001) %>%
+    summarise(cont = n())  %>%
+    mutate(prop = (cont/sum(cont))*100) %>%
+    ggplot(aes(x = reorder(Q001, desc(Q001)), y = prop, fill = Q001), color = 'black') +
+    geom_bar(stat = 'identity', col = 'white') +
+    coord_flip()) +
+    geom_label(aes(label = paste0(round(prop,2),"%")), position = position_dodge(0.9), hjust = -0.1,
+               size = 6, show.legend = F, color = 'white') +
+    ylim(0, 40) +
+    labs(title = 'Até que série seu pai, ou o homem responsável por você, estudou?', x = '', y = '',
+         caption = 'Fonte: Enem 2022') +
+    scale_fill_manual(values =  c(rep('#a9a9a9', 4), rep('#025930',1), rep('#a9a9a9', 7, rep('#1B418C',2), rep('#a9a9a9',10))))+
+    theme_ipsum() +
+    theme(legend.position = 'none',
+          legend.title = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(),
+          axis.title.y = element_text(size = 16),
+          axis.title.x = element_text(size = 16),
+          axis.text.x = element_blank(),
+          axis.text.y = element_text(size = 16),
+          plot.title = element_text(size = 22),
+          plot.title.position = "plot",
+          plot.caption = element_text(size = 14))
+
+
+
+df_enem$Q002 <- factor(df_enem$Q002, levels = c("A", "B", "C", "D", "E", "F", "G", "H"),
+                       labels=c('Nunca estudou',
+                                'Nao completou a 4 serie/5 ano do ensino fundamental',
+                                'Completou a 4 serie/5 ano, mas nao completou a 8 serie/9 ano do ensino fundamental',
+                                'Completou a 8 serie/9 ano do ensino fundamental, mas nao completou o Ensino Medio',
+                                'Completou o Ensino Medio, mas nao completou a Faculdade',
+                                'Completou a Faculdade, mas nao completou a Pos-graduacao',
+                                'Completou a Pos-graduacao','Nao sei'))
+
+
+(g1_q002 <- df_enem %>%
+        group_by(Q002) %>%
+        summarise(cont = n())  %>%
+        mutate(prop = (cont/sum(cont))*100) %>%
+        ggplot(aes(x = reorder(Q002, desc(Q002)), y = prop, fill = Q002), color = 'black') +
+        geom_bar(stat = 'identity', col = 'white') +
+        coord_flip()) +
+    geom_label(aes(label = paste0(round(prop,2),"%")), position = position_dodge(0.9), hjust = -0.1,
+               size = 6, show.legend = F, color = 'white') +
+    ylim(0, 40) +
+    labs(title = 'Até que série sua mãe, ou a mulher responsável por você, estudou?', x = '', y = '',
+         caption = 'Fonte: Enem 2022') +
+    scale_fill_manual(values =  c(rep('#a9a9a9', 4), rep('#025930',1), rep('#a9a9a9', 7, rep('#1B418C',2), rep('#a9a9a9',10))))+
+    theme_ipsum() +
+    theme(legend.position = 'none',
+          legend.title = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(),
+          axis.title.y = element_text(size = 16),
+          axis.title.x = element_text(size = 16),
+          axis.text.x = element_blank(),
+          axis.text.y = element_text(size = 16),
+          plot.title = element_text(size = 22),
+          plot.title.position = "plot",
+          plot.caption = element_text(size = 14))
+
+
+df_enem$Q003 <- factor(df_enem$Q003, levels = c("A", "B", "C", "D", "E", "F"),
+                       labels = c("Grupo 1", "Grupo 2", "Grupo 3", "Grupo 4", "Grupo 5", "Não sei"))
+
+df_enem$Q004 <- factor(df_enem$Q004, levels = c("A", "B", "C", "D", "E", "F"),
+                       labels = c("Grupo 1", "Grupo 2", "Grupo 3", "Grupo 4", "Grupo 5", "Não sei"))
+
+
+df_enem$Q006 <- factor(df_enem$Q006,levels =  c('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q'),
+                        labels=c('Nenhuma Renda','Ate R$ 1.212,00','De R$ 1.212,01 ate R$ 1.818,00.',
+                                 'De R$ 1.818,01 ate R$ 2.424,00.','De R$ 2.424,01 ate R$ 3.030,00.',
+                                 'De R$ 3.030,01 ate R$ 3.636,00.','De R$ 3.636,01 ate R$ 4.848,00.',
+                                 'De R$ 4.848,01 ate R$ 6.060,00.','De R$ 6.060,01 ate R$ 7.272,00.',
+                                 'De R$ 7.272,01 ate R$ 8.484,00.','De R$ 8.484,01 ate R$ 9.696,00.',
+                                 'De R$ 9.696,01 ate R$ 10.908,00.','De R$ 10.908,01 ate R$ 12.120,00.',
+                                 'De R$ 12.120,01 ate R$ 14.544,00.','De R$ 14.544,01 ate R$ 18.180,00.',
+                                 'De R$ 18.180,01 ate R$ 24.240,00.','Acima de R$ 24.240,00.'))
+
+
+(g1_q006 <- df_enem %>%
+        group_by(Q006) %>%
+        summarise(cont = n())  %>%
+        mutate(prop = (cont/sum(cont))*100) %>%
+        ggplot(aes(x = reorder(Q006, desc(Q006)), y = prop, fill = Q006), color = 'black') +
+        geom_bar(stat = 'identity', col = 'white') +
+        coord_flip()) +
+    geom_label(aes(label = paste0(round(prop,2),"%")), position = position_dodge(0.9), hjust = -0.1,
+               size = 6, show.legend = F, color = 'white') +
+    ylim(0, 40) +
+    labs(title = 'Qual é a renda mensal de sua família?', x = '', y = '',
+         subtitle = 'Renda do inscrito e dos seus familiares',
+         caption = 'Fonte: Enem 2022') +
+    scale_fill_manual(values =  c('#D91E1E', rep('#F2B705', 4), rep('#025930',3), rep('#a9a9a9',5), rep('#1B418C',10), rep('#a9a9a9',10)))+
+    theme_ipsum() +
+    theme(legend.position = 'none',
+          legend.title = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(),
+          axis.title.y = element_text(size = 16),
+          axis.title.x = element_text(size = 16),
+          axis.text.x = element_blank(),
+          axis.text.y = element_text(size = 16),
+          plot.title = element_text(size = 22),
+          plot.title.position = "plot",
+          plot.caption = element_text(size = 14))
+
+
 #### nota ######
+
 df_enem <- df_enem %>%
     rowwise() %>%
     mutate(m = mean(c(NU_NOTA_CN, NU_NOTA_CH, NU_NOTA_LC, NU_NOTA_MT), na.rm = TRUE))
@@ -268,8 +563,50 @@ df_enem |>
     ggplot(aes(y = m, x = as.factor(TP_DEPENDENCIA_ADM_ESC))) +
     geom_boxplot()
 
-df_enem |>
-    drop_na(TP_DEPENDENCIA_ADM_ESC,m) |>
-    ggplot(aes(x = m, fill = as.factor(TP_DEPENDENCIA_ADM_ESC))) +
-    geom_histogram(alpha = 0.5) +
-    facet_grid(TP_DEPENDENCIA_ADM_ESC~.)
+
+media_global <- mean(df_enem$m, na.rm = TRUE)
+media_global
+quart1_global <- quantile(df_enem$m, na.rm = TRUE, 0.25)
+quart1_global
+quart3_global <- quantile(df_enem$m, na.rm = TRUE, 0.75)
+quart3_global
+quart2_global <- quantile(df_enem$m, na.rm = TRUE, 0.5)
+quart2_global
+
+sd(df_enem$m, na.rm = TRUE)
+summary(df_enem$m)
+
+notas_1000 <- length(which(df_enem$m == 1000 & !is.na(df_enem$m)))
+notas_1000
+
+
+g1_nota_global <- ggplot(df_enem, aes(x = m)) +
+    geom_histogram(color = "#a9a9a9", alpha = 0.6) +
+    geom_vline(xintercept = media_global, color = '#025930', linetype = 'dashed', size = 1)+
+    # geom_vline(xintercept = quart2_redacao, color = '#1B418C', linetype = 'dashed', size = 1)+
+    geom_vline(xintercept = quart1_global, color = '#d91e1e', linetype = 'dashed', size = 1, alpha = 0.5)+
+    geom_vline(xintercept = quart3_global, color = '#d91e1e', linetype = 'dashed', size = 1, alpha = 0.5)+
+    labs(title = 'Distribuição das notas (exceto Redação)', x = '', y = '',
+         subtitle = 'Média das notas: Ciências da Natureza, Ciências Humanas, Linguagens e Códigos, Matemática ',
+         caption = 'Fonte: Enem 2022') +
+    theme_ipsum() +
+    theme(legend.position = 'none',
+          legend.title = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(),
+          axis.title.x = element_text(size = 16),
+          axis.title.y = element_text(size = 16),
+          axis.text.y = element_blank(),
+          axis.text.x = element_text(size = 12),
+          plot.title = element_text(size = 22),
+          plot.title.position = "plot",
+          plot.caption = element_text(size = 14))
+
+g1_nota_global + annotate('text', label = paste0("Média: ", round(media_global,2), '\ne a mediana: ', round(quart2_global,2)), y = 410000, x = media_global+10,
+                      col = '#025930', size = 6, hjust = 0) +
+    annotate('text', label = paste0("Q1: ", round(quart1_global,2)),y = 310000, x = quart1_global-60,
+             col = '#d91e1e', size = 6, hjust = 0) +
+    annotate('text', label = paste0("Q3: ", round(quart3_global,2)),y = 310000, x = quart3_global+10,
+             col = '#d91e1e', size = 6, hjust = 0) 
+
