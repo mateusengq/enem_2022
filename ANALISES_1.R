@@ -2,9 +2,11 @@
 
 if(!require(data.table)){install.packages('data.table')}
 if(!require(tidyverse)){install.packages('tidyverse')}
+if(!require(GGally)){install.packages('GGally')}
 library(hrbrthemes)
 library(kableExtra)
 library(ggtext)
+library(corrplot)
 
 cores <- c('#1B418C','#025930', '#F2E205', '#F2B705', '#D91E1E', '#CCCCCC')
 
@@ -554,23 +556,23 @@ df_enem$Q006 <- factor(df_enem$Q006,levels =  c('A','B','C','D','E','F','G','H',
 
 df_enem <- df_enem %>%
     rowwise() %>%
-    mutate(m = mean(c(NU_NOTA_CN, NU_NOTA_CH, NU_NOTA_LC, NU_NOTA_MT), na.rm = TRUE))
+    mutate(media = mean(c(NU_NOTA_CN, NU_NOTA_CH, NU_NOTA_LC, NU_NOTA_MT), na.rm = TRUE))
 
-hist(df_enem$m)
+hist(df_enem$media)
 
 df_enem |>
     drop_na(TP_DEPENDENCIA_ADM_ESC,m) |>
-    ggplot(aes(y = m, x = as.factor(TP_DEPENDENCIA_ADM_ESC))) +
+    ggplot(aes(y = media, x = as.factor(TP_DEPENDENCIA_ADM_ESC))) +
     geom_boxplot()
 
 
-media_global <- mean(df_enem$m, na.rm = TRUE)
+media_global <- mean(df_enem$media, na.rm = TRUE)
 media_global
-quart1_global <- quantile(df_enem$m, na.rm = TRUE, 0.25)
+quart1_global <- quantile(df_enem$media, na.rm = TRUE, 0.25)
 quart1_global
-quart3_global <- quantile(df_enem$m, na.rm = TRUE, 0.75)
+quart3_global <- quantile(df_enem$media, na.rm = TRUE, 0.75)
 quart3_global
-quart2_global <- quantile(df_enem$m, na.rm = TRUE, 0.5)
+quart2_global <- quantile(df_enem$media, na.rm = TRUE, 0.5)
 quart2_global
 
 sd(df_enem$m, na.rm = TRUE)
@@ -610,3 +612,84 @@ g1_nota_global + annotate('text', label = paste0("Média: ", round(media_global,
     annotate('text', label = paste0("Q3: ", round(quart3_global,2)),y = 310000, x = quart3_global+10,
              col = '#d91e1e', size = 6, hjust = 0) 
 
+
+###### Análise Multivariada ########
+### correlação notas
+
+df_enem %>%
+    select(NU_NOTA_CH, NU_NOTA_CN, NU_NOTA_LC, NU_NOTA_MT) %>%
+    drop_na() %>%
+    ggpairs(title = "Análise das notas objetivas")
+
+correlacao <- df_enem |>
+    select(NU_NOTA_CN, NU_NOTA_CH, NU_NOTA_LC, NU_NOTA_MT, NU_NOTA_REDACAO) |>
+    drop_na() |>
+    cor()
+
+correlacao
+
+
+df_enem |>
+    select(NU_NOTA_CN, NU_NOTA_CH, NU_NOTA_LC, NU_NOTA_MT, NU_NOTA_REDACAO) |>
+    drop_na() |>
+    cor()
+
+corrplot.mixed(correlacao, order = "AOE")
+
+#### notas x sexo
+
+df_boxplot <- df_enem |>
+    select(TP_SEXO, NU_NOTA_CN, NU_NOTA_CH, NU_NOTA_LC, NU_NOTA_MT, NU_NOTA_REDACAO, media) |>
+    drop_na() |>
+    pivot_longer(!TP_SEXO, names_to = "AREA_CONHECIMENTO", values_to = "NOTA")
+
+ggplot(data = df_boxplot, aes(x = TP_SEXO ,y = NOTA, fill = AREA_CONHECIMENTO)) + #, y = NOTA, fill = AREA_CONHECIMENTO)) +
+    geom_boxplot() +
+    #geom_jitter(alpha = 0.5) +
+    facet_grid(.~ AREA_CONHECIMENTO)+
+    labs(title = 'Boxplot das notas ', x = '', y = '',
+         subtitle = 'Média das provas objetivas, notas individuais de Ciências da Natureza, Ciências Humanas, Linguagens e Códigos, Matemática e Redação ',
+         caption = 'Fonte: Enem 2022') +
+    scale_fill_manual(values = c("#1B418C", "#025930", "#F2E205", "#F2B705", "#D91E1E", "#CCCCCC")) +
+    theme_ipsum() +
+    theme(legend.position = 'none',
+          legend.title = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(),
+          axis.title.x = element_text(size = 16),
+          axis.title.y = element_text(size = 16),
+          axis.text.y = element_blank(),
+          axis.text.x = element_text(size = 16),
+          plot.title = element_text(size = 22),
+          plot.title.position = "plot",
+          plot.caption = element_text(size = 14),
+          strip.text = element_text(size = 14, vjust = 0.5, hjust = .5, face = 'bold'))
+
+
+base_notas <- df_enem |>
+    select(TP_SEXO, NU_NOTA_CN, NU_NOTA_CH, NU_NOTA_LC, NU_NOTA_MT, NU_NOTA_REDACAO) |>
+    drop_na() |>
+    pivot_longer(!TP_SEXO, names_to = "AREA_CONHECIMENTO", values_to = "NOTA") |>
+    filter(TP_SEXO == 'F')
+
+psych::describeBy(base_notas$NOTA, base_notas$AREA_CONHECIMENTO)
+
+rm(base_notas)
+
+#### notas x faixa etaria
+# considerar apenas a nota média
+
+notas_idade <- df_enem |>
+    select(media, TP_FAIXA_ETARIA, NU_NOTA_REDACAO) |>
+    drop_na()
+
+ggplot(notas_idade, aes(x = media, fill = as.factor(TP_FAIXA_ETARIA), group = as.factor(TP_FAIXA_ETARIA))) +
+    geom_histogram() +
+    facet_wrap(TP_FAIXA_ETARIA ~ .)
+
+
+#### notas x renda familiar
+#### notas x raça
+#### notas x ecola
+#### notas x treineiro
