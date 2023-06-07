@@ -677,7 +677,6 @@ psych::describeBy(base_notas$NOTA, base_notas$AREA_CONHECIMENTO)
 
 rm(base_notas)
 
-#### notas x faixa etaria
 # considerar apenas a nota média
 
 notas_idade <- df_enem |>
@@ -689,7 +688,155 @@ ggplot(notas_idade, aes(x = media, fill = as.factor(TP_FAIXA_ETARIA), group = as
     facet_wrap(TP_FAIXA_ETARIA ~ .)
 
 
-#### notas x renda familiar
-#### notas x raça
-#### notas x ecola
+#### notas x escola
+notas_escola <- df_enem |>
+    select(media, TP_DEPENDENCIA_ADM_ESC, NU_NOTA_REDACAO) |>
+    drop_na()
+
+df_notas_escola_2 <- notas_escola |>
+    group_by(TP_DEPENDENCIA_ADM_ESC) |>
+    summarise(Mean.DA = mean(media))
+
+(g1_dep_adm_escola <- ggplot(notas_escola, aes(x = media, after_stat(density), fill = TP_DEPENDENCIA_ADM_ESC)) +
+    geom_histogram(bins = 50) +
+    geom_density(alpha = .5) +
+    geom_vline(aes(xintercept = mean(media)), col = "#D91E1E", size = 1., linetype = "dotdash") +
+        geom_vline(data = df_notas_escola_2, aes(xintercept = Mean.DA), col = "black", size = 1.5, linetype = "dotdash") +
+        geom_label(data = df_notas_escola_2, aes(label = paste0("A média da categoria\né: ", round(Mean.DA, 2))
+                                                 ), inherit.aes = FALSE,
+                   x = 150, y = 0.0055) +
+    facet_wrap(TP_DEPENDENCIA_ADM_ESC~.) +
+    labs(title = 'Histograma da Nota Média das Provas Objetivas por Dependência Adm da Escola', x = 'Nota', y = 'Proporção',
+         subtitle = paste0('A média global é: ', round(Media_global, 2)),
+         caption = 'Fonte: Enem 2022') +
+    scale_fill_manual(values = c("#1B418C", "#F2B705", "#025930", "#CCCCCC")) +
+    theme_ipsum() +
+    theme(legend.position = 'none',
+          legend.title = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(),
+          axis.title.x = element_text(size = 16),
+          axis.title.y = element_text(size = 16),
+          axis.text.y = element_text(size = 16),
+          axis.text.x = element_text(size = 16),
+          plot.title = element_text(size = 22),
+          plot.title.position = "plot",
+          plot.caption = element_text(size = 16),
+          strip.text = element_text(size = 14, vjust = 0.5, hjust = .5, face = 'bold')))
+
+
+g1_dep_adm_escola + annotate('text', x = 150, y = 0.007,
+                             label = paste0("A média global é :", round(Media_global,2)), col = "#D91E1E", ) +
+    annotate("text", )
+
+
+(g1_dep_adm_escola_quant <- ggplot(notas_escola, aes(x = media, fill = TP_DEPENDENCIA_ADM_ESC)) +
+        geom_histogram(bins = 50) +
+        geom_density(alpha = .5) +
+        geom_vline(aes(xintercept = mean(media)), col = "#D91E1E", size = 1., linetype = "dotdash") +
+        geom_vline(data = df_notas_escola_2, aes(xintercept = Mean.DA), col = "black", size = 1.5, linetype = "dotdash") +
+        geom_label(data = df_notas_escola_2, aes(label = paste0("A média da categoria\né: ", round(Mean.DA, 2))
+        ), inherit.aes = FALSE,
+        x = 50, y = 45000) +
+        facet_wrap(TP_DEPENDENCIA_ADM_ESC~.) +
+        labs(title = 'Histograma da Nota Média das Provas Objetivas por Dependência Adm da Escola', x = 'Nota', y = 'Proporção',
+             subtitle = paste0('A média global é: ', round(Media_global, 2)),
+             caption = 'Fonte: Enem 2022') +
+        scale_fill_manual(values = c("#1B418C", "#F2B705", "#025930", "#CCCCCC")) +
+        theme_ipsum() +
+        theme(legend.position = 'none',
+              legend.title = element_blank(),
+              panel.grid.major = element_blank(),
+              panel.grid.minor = element_blank(),
+              panel.background = element_blank(),
+              axis.title.x = element_text(size = 16),
+              axis.title.y = element_text(size = 16),
+              axis.text.y = element_text(size = 16),
+              axis.text.x = element_text(size = 16),
+              plot.title = element_text(size = 22),
+              plot.title.position = "plot",
+              plot.caption = element_text(size = 16),
+              strip.text = element_text(size = 14, vjust = 0.5, hjust = .5, face = 'bold')))
+
+
 #### notas x treineiro
+
+df_treineiro <- df_enem |>
+    select(media, NU_NOTA_REDACAO, IN_TREINEIRO) |>
+    drop_na()
+
+psych::describeBy(df_treineiro$media, df_treineiro$IN_TREINEIRO)
+
+ggplot(df_treineiro, aes(x = as.factor(IN_TREINEIRO), y = media, fill = IN_TREINEIRO)) +
+    geom_boxplot(alpha = 0.7) +
+    labs(title = 'Notas Médias x Treineiro', x = 'É TREINEIRO?', y = 'Nota Média',
+         caption = 'Fonte: Enem 2022') +
+    scale_fill_manual(values = c("#1B418C", "#F2B705", "#025930", "#CCCCCC")) +
+    theme_ipsum() +
+    theme(legend.position = 'none',
+          legend.title = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(),
+          axis.title.x = element_text(size = 16),
+          axis.title.y = element_text(size = 16),
+          axis.text.y = element_text(size = 16),
+          axis.text.x = element_text(size = 16),
+          plot.title = element_text(size = 22),
+          plot.title.position = "plot",
+          plot.caption = element_text(size = 16),
+          strip.text = element_text(size = 14, vjust = 0.5, hjust = .5, face = 'bold'))
+
+### q1 e q2
+# prop <- (prop.table(table(df_enem$Q001, df_enem$Q002))*100)
+# 
+# ggplot(as.data.frame(prop), aes(x = Var1, y = Var2, fill = Freq)) +
+#     geom_tile()
+
+
+## q006
+df_q006 <- df_enem |>
+    select(Q006, media, NU_NOTA_REDACAO) |>
+    drop_na()
+
+df_q006$Q006 <- factor(df_q006$Q006,levels =  c('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q'),
+                       labels=c('Nenhuma Renda','Ate R$ 1.212,00','Ate R$ 1.818,00.',
+                                'Ate R$ 2.424,00.','Ate R$ 3.030,00.',
+                                'Ate R$ 3.636,00.','Ate R$ 4.848,00.',
+                                'Ate R$ 6.060,00.','Ate R$ 7.272,00.',
+                                'Ate R$ 8.484,00.','Ate R$ 9.696,00.',
+                                'Ate R$ 10.908,00.','Ate R$ 12.120,00.',
+                                'Ate R$ 14.544,00.','Ate R$ 18.180,00.',
+                                'Ate R$ 24.240,00.','Acima de R$ 24.240,00.'))
+
+nota_mediana <- median(df_q006$media)
+
+(g1_renda <- ggplot(df_q006, aes(y = media, fill = Q006, group = Q006)) +
+    geom_boxplot(alpha = 0.7, col = "black") +
+    #geom_hline(yintercept = nota_mediana) +
+    facet_grid(.~Q006, switch = "x") +
+    geom_hline(yintercept = nota_mediana, col = "firebrick", size = 1., linetype = "dotdash") +
+    labs(title = 'Notas por Faixa de Renda', x = 'Faixa', y = 'Nota Média',
+         subtitle = paste0("Importante: Onde se lê 'Até', considerar do valor anterior até o valor apresentado\n","A mediana (em vermelho) é de: ", round(nota_mediana, 2)),
+         caption = 'Fonte: Enem 2022') +
+    scale_y_continuous(breaks = seq(0, 1000, 150), limits = c(0, 1001)) +
+    scale_fill_manual(values = c(rep("#CCCCCC", 25))) +
+    theme_ipsum() +
+    theme(legend.position = 'none',
+          legend.title = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          panel.background = element_blank(),
+          axis.title.x = element_blank(),
+          axis.title.y = element_text(size = 16),
+          axis.text.y = element_text(size = 16),
+          axis.text.x = element_blank(),
+          plot.title = element_text(size = 22),
+          plot.title.position = "plot",
+          plot.caption = element_text(size = 16),
+          strip.text = element_text(size = 12, angle = 90, vjust = 0.5, hjust = .5)))
+
+g1_renda + annotate("text", x = -1, y = 900, hjust = 0, label = paste0("A mediana é de: ", round(nota_mediana, 2)), col = "firebrick") + coord_cartesian(ylim = c(0, 900), clip = "off")
+
+#### q6
